@@ -1,0 +1,950 @@
+[
+  {
+    "method": "bfs",
+    "algorithm": "Breadth-first search",
+    "seed": 6,
+    "difficulty": "easy",
+    "steps": 96,
+    "return": 20.92782967683322,
+    "completed": true,
+    "died": false,
+    "gems_collected": 9,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "BFS",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 8,
+      "estimated_path_cost": 8.0,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "dfs",
+    "algorithm": "Depth-first search",
+    "seed": 6,
+    "difficulty": "easy",
+    "steps": 96,
+    "return": 20.92782967683322,
+    "completed": true,
+    "died": false,
+    "gems_collected": 9,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "DFS",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 8,
+      "estimated_path_cost": 8.0,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "ucs",
+    "algorithm": "Uniform-cost search",
+    "seed": 6,
+    "difficulty": "easy",
+    "steps": 96,
+    "return": 20.92782967683322,
+    "completed": true,
+    "died": false,
+    "gems_collected": 9,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "UCS",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 8,
+      "estimated_path_cost": 41.818,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "greedy",
+    "algorithm": "Greedy best-first search",
+    "seed": 6,
+    "difficulty": "easy",
+    "steps": 96,
+    "return": 20.92782967683322,
+    "completed": true,
+    "died": false,
+    "gems_collected": 9,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "GREEDY",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 8,
+      "estimated_path_cost": 41.818,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "astar",
+    "algorithm": "A*",
+    "seed": 6,
+    "difficulty": "easy",
+    "steps": 96,
+    "return": 20.92782967683322,
+    "completed": true,
+    "died": false,
+    "gems_collected": 9,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "ASTAR",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 8,
+      "estimated_path_cost": 41.818,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "value-iteration",
+    "algorithm": "Value iteration",
+    "seed": 6,
+    "difficulty": "easy",
+    "steps": 96,
+    "return": 20.92782967683322,
+    "completed": true,
+    "died": false,
+    "gems_collected": 9,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "VALUE_ITERATION",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 81,
+      "estimated_path_cost": 41.818,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "policy-iteration",
+    "algorithm": "Policy iteration",
+    "seed": 6,
+    "difficulty": "easy",
+    "steps": 96,
+    "return": 20.92782967683322,
+    "completed": true,
+    "died": false,
+    "gems_collected": 9,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "POLICY_ITERATION",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 9,
+      "estimated_path_cost": 41.818,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "monte-carlo",
+    "algorithm": "Monte Carlo control",
+    "seed": 6,
+    "difficulty": "easy",
+    "steps": 350,
+    "return": 4.119320851660821,
+    "completed": false,
+    "died": false,
+    "gems_collected": 1,
+    "gems_available": 9,
+    "truncated": true,
+    "planning": {
+      "method": "Monte Carlo control",
+      "training": "First-visit episode-return updates; 12 training episodes on easy levels.",
+      "training_steps": 1183,
+      "visited_states": 54
+    }
+  },
+  {
+    "method": "hill-climbing",
+    "algorithm": "Hill climbing",
+    "seed": 6,
+    "difficulty": "easy",
+    "steps": 96,
+    "return": 20.92782967683322,
+    "completed": true,
+    "died": false,
+    "gems_collected": 9,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "HILL_CLIMBING",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 10000,
+      "estimated_path_cost": 41.818,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "simulated-annealing",
+    "algorithm": "Simulated annealing",
+    "seed": 6,
+    "difficulty": "easy",
+    "steps": 96,
+    "return": 20.92782967683322,
+    "completed": true,
+    "died": false,
+    "gems_collected": 9,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "SIMULATED_ANNEALING",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 10000,
+      "estimated_path_cost": 41.818,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "ucb",
+    "algorithm": "UCB bandit",
+    "seed": 6,
+    "difficulty": "easy",
+    "steps": 162,
+    "return": -1.5894536349882813,
+    "completed": false,
+    "died": true,
+    "gems_collected": 6,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "UCB",
+      "training": "Online action-reward updates during this episode; no state conditioning.",
+      "action_counts": [
+        21,
+        18,
+        21,
+        25,
+        18,
+        19,
+        19,
+        21
+      ]
+    }
+  },
+  {
+    "method": "bfs",
+    "algorithm": "Breadth-first search",
+    "seed": 33,
+    "difficulty": "medium",
+    "steps": 93,
+    "return": 20.90550301852555,
+    "completed": true,
+    "died": false,
+    "gems_collected": 9,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "BFS",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 8,
+      "estimated_path_cost": 8.0,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "dfs",
+    "algorithm": "Depth-first search",
+    "seed": 33,
+    "difficulty": "medium",
+    "steps": 93,
+    "return": 20.90550301852555,
+    "completed": true,
+    "died": false,
+    "gems_collected": 9,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "DFS",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 8,
+      "estimated_path_cost": 8.0,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "ucs",
+    "algorithm": "Uniform-cost search",
+    "seed": 33,
+    "difficulty": "medium",
+    "steps": 93,
+    "return": 20.90550301852555,
+    "completed": true,
+    "died": false,
+    "gems_collected": 9,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "UCS",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 8,
+      "estimated_path_cost": 40.916,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "greedy",
+    "algorithm": "Greedy best-first search",
+    "seed": 33,
+    "difficulty": "medium",
+    "steps": 93,
+    "return": 20.90550301852555,
+    "completed": true,
+    "died": false,
+    "gems_collected": 9,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "GREEDY",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 8,
+      "estimated_path_cost": 40.916,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "astar",
+    "algorithm": "A*",
+    "seed": 33,
+    "difficulty": "medium",
+    "steps": 93,
+    "return": 20.90550301852555,
+    "completed": true,
+    "died": false,
+    "gems_collected": 9,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "ASTAR",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 8,
+      "estimated_path_cost": 40.916,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "value-iteration",
+    "algorithm": "Value iteration",
+    "seed": 33,
+    "difficulty": "medium",
+    "steps": 93,
+    "return": 20.90550301852555,
+    "completed": true,
+    "died": false,
+    "gems_collected": 9,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "VALUE_ITERATION",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 81,
+      "estimated_path_cost": 40.916,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "policy-iteration",
+    "algorithm": "Policy iteration",
+    "seed": 33,
+    "difficulty": "medium",
+    "steps": 93,
+    "return": 20.90550301852555,
+    "completed": true,
+    "died": false,
+    "gems_collected": 9,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "POLICY_ITERATION",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 9,
+      "estimated_path_cost": 40.916,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "monte-carlo",
+    "algorithm": "Monte Carlo control",
+    "seed": 33,
+    "difficulty": "medium",
+    "steps": 350,
+    "return": 4.1656229164782745,
+    "completed": false,
+    "died": false,
+    "gems_collected": 1,
+    "gems_available": 9,
+    "truncated": true,
+    "planning": {
+      "method": "Monte Carlo control",
+      "training": "First-visit episode-return updates; 12 training episodes on medium levels.",
+      "training_steps": 1352,
+      "visited_states": 51
+    }
+  },
+  {
+    "method": "hill-climbing",
+    "algorithm": "Hill climbing",
+    "seed": 33,
+    "difficulty": "medium",
+    "steps": 93,
+    "return": 20.90550301852555,
+    "completed": true,
+    "died": false,
+    "gems_collected": 9,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "HILL_CLIMBING",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 10000,
+      "estimated_path_cost": 40.916,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "simulated-annealing",
+    "algorithm": "Simulated annealing",
+    "seed": 33,
+    "difficulty": "medium",
+    "steps": 93,
+    "return": 20.90550301852555,
+    "completed": true,
+    "died": false,
+    "gems_collected": 9,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "SIMULATED_ANNEALING",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 10000,
+      "estimated_path_cost": 40.916,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "ucb",
+    "algorithm": "UCB bandit",
+    "seed": 33,
+    "difficulty": "medium",
+    "steps": 78,
+    "return": -5.551346954445167,
+    "completed": false,
+    "died": true,
+    "gems_collected": 2,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "UCB",
+      "training": "Online action-reward updates during this episode; no state conditioning.",
+      "action_counts": [
+        9,
+        9,
+        11,
+        11,
+        9,
+        10,
+        9,
+        10
+      ]
+    }
+  },
+  {
+    "method": "bfs",
+    "algorithm": "Breadth-first search",
+    "seed": 6,
+    "difficulty": "hard",
+    "steps": 36,
+    "return": -3.865074693494469,
+    "completed": false,
+    "died": true,
+    "gems_collected": 4,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "BFS",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 8,
+      "estimated_path_cost": 8.0,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "dfs",
+    "algorithm": "Depth-first search",
+    "seed": 6,
+    "difficulty": "hard",
+    "steps": 36,
+    "return": -3.865074693494469,
+    "completed": false,
+    "died": true,
+    "gems_collected": 4,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "DFS",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 8,
+      "estimated_path_cost": 8.0,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "ucs",
+    "algorithm": "Uniform-cost search",
+    "seed": 6,
+    "difficulty": "hard",
+    "steps": 36,
+    "return": -3.865074693494469,
+    "completed": false,
+    "died": true,
+    "gems_collected": 4,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "UCS",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 8,
+      "estimated_path_cost": 46.091,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "greedy",
+    "algorithm": "Greedy best-first search",
+    "seed": 6,
+    "difficulty": "hard",
+    "steps": 36,
+    "return": -3.865074693494469,
+    "completed": false,
+    "died": true,
+    "gems_collected": 4,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "GREEDY",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 8,
+      "estimated_path_cost": 46.091,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "astar",
+    "algorithm": "A*",
+    "seed": 6,
+    "difficulty": "hard",
+    "steps": 36,
+    "return": -3.865074693494469,
+    "completed": false,
+    "died": true,
+    "gems_collected": 4,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "ASTAR",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 8,
+      "estimated_path_cost": 46.091,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "value-iteration",
+    "algorithm": "Value iteration",
+    "seed": 6,
+    "difficulty": "hard",
+    "steps": 36,
+    "return": -3.865074693494469,
+    "completed": false,
+    "died": true,
+    "gems_collected": 4,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "VALUE_ITERATION",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 81,
+      "estimated_path_cost": 46.091,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "policy-iteration",
+    "algorithm": "Policy iteration",
+    "seed": 6,
+    "difficulty": "hard",
+    "steps": 36,
+    "return": -3.865074693494469,
+    "completed": false,
+    "died": true,
+    "gems_collected": 4,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "POLICY_ITERATION",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 9,
+      "estimated_path_cost": 46.091,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "monte-carlo",
+    "algorithm": "Monte Carlo control",
+    "seed": 6,
+    "difficulty": "hard",
+    "steps": 350,
+    "return": 3.330441116133651,
+    "completed": false,
+    "died": false,
+    "gems_collected": 0,
+    "gems_available": 9,
+    "truncated": true,
+    "planning": {
+      "method": "Monte Carlo control",
+      "training": "First-visit episode-return updates; 12 training episodes on hard levels.",
+      "training_steps": 1129,
+      "visited_states": 46
+    }
+  },
+  {
+    "method": "hill-climbing",
+    "algorithm": "Hill climbing",
+    "seed": 6,
+    "difficulty": "hard",
+    "steps": 36,
+    "return": -3.865074693494469,
+    "completed": false,
+    "died": true,
+    "gems_collected": 4,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "HILL_CLIMBING",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 10000,
+      "estimated_path_cost": 46.091,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "simulated-annealing",
+    "algorithm": "Simulated annealing",
+    "seed": 6,
+    "difficulty": "hard",
+    "steps": 36,
+    "return": -3.865074693494469,
+    "completed": false,
+    "died": true,
+    "gems_collected": 4,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "SIMULATED_ANNEALING",
+      "planned_route": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expanded_nodes": 10000,
+      "estimated_path_cost": 46.091,
+      "abstraction": "Platforms are nodes; forward edges represent jumps within 4.2 horizontal units, up to 1.65 units upward and 3 downward."
+    }
+  },
+  {
+    "method": "ucb",
+    "algorithm": "UCB bandit",
+    "seed": 6,
+    "difficulty": "hard",
+    "steps": 87,
+    "return": -3.5401794464268876,
+    "completed": false,
+    "died": true,
+    "gems_collected": 4,
+    "gems_available": 9,
+    "truncated": false,
+    "planning": {
+      "method": "UCB",
+      "training": "Online action-reward updates during this episode; no state conditioning.",
+      "action_counts": [
+        10,
+        10,
+        12,
+        14,
+        10,
+        11,
+        10,
+        10
+      ]
+    }
+  }
+]

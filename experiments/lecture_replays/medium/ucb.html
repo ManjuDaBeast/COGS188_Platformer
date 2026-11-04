@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Platformer replay — UCB bandit</title>
+<style>
+  :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #101725; color: #edf3fa; }
+  body { max-width: 1100px; margin: 24px auto; padding: 0 18px; }
+  h1 { font-size: 1.35rem; margin: 0 0 12px; }
+  .stage { overflow: hidden; border: 1px solid #33425a; border-radius: 12px; background: #18243a; }
+  svg { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; }
+  .controls { display: grid; grid-template-columns: auto auto auto 1fr auto; align-items: center; gap: 12px; margin: 14px 0; }
+  button { border: 1px solid #536783; border-radius: 7px; color: inherit; background: #263751; padding: 7px 12px; cursor: pointer; }
+  button:hover { background: #354c6d; }
+  input[type=range] { width: 100%; accent-color: #65d6b1; }
+  select { border: 1px solid #536783; border-radius: 7px; color: inherit; background: #263751; padding: 6px; }
+  .status { display: flex; flex-wrap: wrap; gap: 18px; color: #c4d2e3; font-size: .92rem; }
+  .status strong { color: #fff; }
+  .legend { color: #a9bad0; font-size: .85rem; margin-top: 12px; }
+  @media(max-width:600px) { .controls { grid-template-columns: auto auto auto 1fr; } .controls label { grid-column: 1 / -1; } }
+</style>
+</head>
+<body>
+<h1>Platformer replay — UCB bandit</h1>
+<div class="stage"><svg id="scene" viewBox="0 0 960 540" role="img" aria-label="Animated platformer gameplay"></svg></div>
+<div class="controls">
+  <button id="play" type="button">▶ Play</button>
+  <button id="back" type="button" aria-label="Previous frame">◀</button>
+  <button id="forward" type="button" aria-label="Next frame">▶|</button>
+  <label><input id="scrubber" type="range" min="0" max="78" value="0"></label>
+  <label>Speed <select id="speed"><option value="1">1×</option><option value="2">2×</option><option value="0.5">0.5×</option></select></label>
+</div>
+<div class="status" id="status"></div>
+<p class="legend">🟩 platforms · 💎 gems · 🔺 hazards · 🟠 enemies · 🏁 goal · 🟦 player</p>
+<script>
+const level = {"platforms":[{"left":-2.0,"right":3.0,"y":0.0,"moving":false,"amplitude":0.0,"phase":2.7874863849281146,"speed":0.0},{"left":4.211642072732101,"right":8.392176980181166,"y":-0.3440506251016772,"moving":false,"amplitude":0.0,"phase":2.2564383715242644,"speed":0.0},{"left":9.274052992221486,"right":12.94498986311654,"y":-0.705172376799948,"moving":true,"amplitude":0.18387552628224096,"phase":2.1538012424891866,"speed":0.8108054345205076},{"left":13.663528146141886,"right":17.347555433404064,"y":-0.8004060742479361,"moving":false,"amplitude":0.0,"phase":0.4519079316831202,"speed":0.0},{"left":18.886562757340055,"right":22.411154284325413,"y":-1.2070194650597506,"moving":false,"amplitude":0.0,"phase":1.5553575777522017,"speed":0.0},{"left":23.83869440403914,"right":27.18490735314569,"y":-1.4929267262747627,"moving":false,"amplitude":0.0,"phase":4.472649120997643,"speed":0.0},{"left":28.573323021734424,"right":32.24211944324115,"y":-1.2231396034230078,"moving":false,"amplitude":0.0,"phase":1.209933468814331,"speed":0.0},{"left":33.514008885637296,"right":37.386639390407076,"y":-0.9318940661271105,"moving":true,"amplitude":0.17288157533284526,"phase":1.8813171816590082,"speed":0.892795896925665},{"left":38.250394081161296,"right":41.77451274509035,"y":-1.3562625085227593,"moving":false,"amplitude":0.0,"phase":4.700304405820585,"speed":0.0}],"hazards":[],"enemies":[],"gems":[{"x":0.5,"y":1.1},{"x":6.301909526456633,"y":0.7559493748983228},{"x":11.109521427669012,"y":0.39482762320005205},{"x":15.505541789772975,"y":0.299593925752064},{"x":20.648858520832732,"y":-0.10701946505975046},{"x":25.511800878592414,"y":-0.39292672627476266},{"x":30.407721232487788,"y":-0.12313960342300767},{"x":35.45032413802219,"y":0.16810593387288963},{"x":40.01245341312582,"y":-0.2562625085227592}],"goal":{"x":41.12451274509035,"y":-1.3562625085227593},"planned_route":[]};
+const frames = [{"x":-1.0,"y":0.5,"time":0.0,"vx":0.0,"vy":0.0,"gems":[false,false,false,false,false,false,false,false,false],"action":"start","reward":0.0,"completed":false,"died":false},{"x":-1.0,"y":0.5,"time":0.1,"vx":0.0,"vy":0.0,"gems":[false,false,false,false,false,false,false,false,false],"action":"no-op","reward":0.009536226644038423,"completed":false,"died":false},{"x":-1.22,"y":0.5,"time":0.2,"vx":-2.2,"vy":0.0,"gems":[false,false,false,false,false,false,false,false,false],"action":"left","reward":-0.0005647570488054223,"completed":false,"died":false},{"x":-1.22,"y":0.5,"time":0.30000000000000004,"vx":0.0,"vy":0.0,"gems":[false,false,false,false,false,false,false,false,false],"action":"right","reward":0.009638256782349872,"completed":false,"died":false},{"x":-1.22,"y":1.12,"time":0.4,"vx":0.0,"vy":6.2,"gems":[false,false,false,false,false,false,false,false,false],"action":"jump","reward":0.009638256782349872,"completed":false,"died":false},{"x":-1.44,"y":1.56,"time":0.5,"vx":-2.2,"vy":4.4,"gems":[false,false,false,false,false,false,false,false,false],"action":"left + jump","reward":-0.00046272691049397373,"completed":false,"died":false},{"x":-1.44,"y":1.82,"time":0.6,"vx":0.0,"vy":2.6000000000000005,"gems":[false,false,false,false,false,false,false,false,false],"action":"right + jump","reward":0.009740286920661543,"completed":false,"died":false},{"x":-1.44,"y":2.0300000000000002,"time":0.7,"vx":0.0,"vy":2.1000000000000005,"gems":[false,false,false,false,false,false,false,false,false],"action":"glide","reward":0.009740286920661543,"completed":false,"died":false},{"x":-1.22,"y":2.1900000000000004,"time":0.7999999999999999,"vx":2.2,"vy":1.6000000000000005,"gems":[false,false,false,false,false,false,false,false,false],"action":"right + glide","reward":0.019841270613505387,"completed":false,"died":false},{"x":-0.7799999999999999,"y":2.3000000000000003,"time":0.8999999999999999,"vx":4.4,"vy":1.1000000000000005,"gems":[false,false,false,false,false,false,false,false,false],"action":"right + glide","reward":0.02984022416803756,"completed":false,"died":false},{"x":-0.2799999999999999,"y":2.2300000000000004,"time":0.9999999999999999,"vx":5.0,"vy":-0.6999999999999995,"gems":[false,false,false,false,false,false,false,false,false],"action":"right + jump","reward":0.032390977625826885,"completed":false,"died":false},{"x":0.11000000000000015,"y":2.1100000000000003,"time":1.0999999999999999,"vx":3.9000000000000004,"vy":-1.1999999999999995,"gems":[false,false,false,false,false,false,false,false,false],"action":"glide","reward":0.027108599101424165,"completed":false,"died":false},{"x":0.6100000000000001,"y":1.8100000000000003,"time":1.2,"vx":5.0,"vy":-2.9999999999999996,"gems":[true,false,false,false,false,false,false,false,false],"action":"right","reward":1.031978219339021,"completed":false,"died":false},{"x":1.0000000000000002,"y":1.3300000000000003,"time":1.3,"vx":3.9000000000000004,"vy":-4.8,"gems":[true,false,false,false,false,false,false,false,false],"action":"jump","reward":0.026695840814618073,"completed":false,"died":false},{"x":1.3042000000000002,"y":0.6700000000000003,"time":1.4000000000000001,"vx":3.0420000000000003,"vy":-6.6,"gems":[true,false,false,false,false,false,false,false,false],"action":"no-op","reward":0.022575585565584262,"completed":false,"died":false},{"x":1.3884000000000003,"y":0.5,"time":1.5000000000000002,"vx":0.8420000000000001,"vy":0.0,"gems":[true,false,false,false,false,false,false,false,false],"action":"left + jump","reward":0.01233352201785621,"completed":false,"died":false},{"x":1.2526000000000004,"y":0.5,"time":1.6000000000000003,"vx":-1.358,"vy":0.0,"gems":[true,false,false,false,false,false,false,false,false],"action":"left","reward":0.0021934886084404945,"completed":false,"died":false},{"x":1.3368000000000004,"y":0.5,"time":1.7000000000000004,"vx":0.8420000000000001,"vy":0.0,"gems":[true,false,false,false,false,false,false,false,false],"action":"right","reward":0.012357452723024362,"completed":false,"died":false},{"x":1.6410000000000005,"y":0.5,"time":1.8000000000000005,"vx":3.0420000000000003,"vy":0.0,"gems":[true,false,false,false,false,false,false,false,false],"action":"right","reward":0.02241938669929567,"completed":false,"died":false},{"x":2.1410000000000005,"y":0.5,"time":1.9000000000000006,"vx":5.0,"vy":0.0,"gems":[true,false,false,false,false,false,false,false,false],"action":"right + glide","reward":0.03126818233104368,"completed":false,"died":false},{"x":2.6410000000000005,"y":1.12,"time":2.0000000000000004,"vx":5.0,"vy":6.2,"gems":[true,false,false,false,false,false,false,false,false],"action":"right + jump","reward":0.03103629565306299,"completed":false,"died":false},{"x":3.0310000000000006,"y":1.6900000000000002,"time":2.1000000000000005,"vx":3.9000000000000004,"vy":5.7,"gems":[true,false,false,false,false,false,false,false,false],"action":"glide","reward":0.02575391712866027,"completed":false,"died":false},{"x":3.3352000000000004,"y":2.08,"time":2.2000000000000006,"vx":3.0420000000000003,"vy":3.9000000000000004,"gems":[true,false,false,false,false,false,false,false,false],"action":"jump","reward":0.021633661879626016,"completed":false,"died":false},{"x":3.5724760000000004,"y":2.29,"time":2.3000000000000007,"vx":2.3727600000000004,"vy":2.1000000000000005,"gems":[true,false,false,false,false,false,false,false,false],"action":"no-op","reward":0.018419862785379333,"completed":false,"died":false},{"x":3.5897520000000003,"y":2.3200000000000003,"time":2.400000000000001,"vx":0.17276000000000025,"vy":0.3000000000000005,"gems":[true,false,false,false,false,false,false,false,false],"action":"left + jump","reward":0.008208836805726047,"completed":false,"died":false},{"x":3.3870280000000004,"y":2.1700000000000004,"time":2.500000000000001,"vx":-2.02724,"vy":-1.4999999999999996,"gems":[true,false,false,false,false,false,false,false,false],"action":"left","reward":-0.0019001590356153477,"completed":false,"died":false},{"x":3.404304,"y":1.8400000000000003,"time":2.600000000000001,"vx":0.17276000000000025,"vy":-3.3,"gems":[true,false,false,false,false,false,false,false,false],"action":"right","reward":0.00829484264704262,"completed":false,"died":false},{"x":3.6415800000000003,"y":1.6300000000000003,"time":2.700000000000001,"vx":2.3727600000000004,"vy":-2.1,"gems":[true,false,false,false,false,false,false,false,false],"action":"right + glide","reward":0.018387814191388692,"completed":false,"died":false},{"x":4.0988560000000005,"y":1.2400000000000002,"time":2.800000000000001,"vx":4.572760000000001,"vy":-3.9000000000000004,"gems":[true,false,false,false,false,false,false,false,false],"action":"right + jump","reward":0.028378755597423762,"completed":false,"died":false},{"x":4.455531280000001,"y":0.8000000000000002,"time":2.9000000000000012,"vx":3.5667528000000006,"vy":-4.4,"gems":[true,false,false,false,false,false,false,false,false],"action":"glide","reward":0.023547745753174316,"completed":false,"died":false},{"x":4.7337379984000005,"y":0.18000000000000005,"time":3.0000000000000013,"vx":2.7820671840000006,"vy":-6.2,"gems":[true,false,false,false,false,false,false,false,false],"action":"jump","reward":0.01977955807465937,"completed":false,"died":false},{"x":4.950739238752001,"y":0.15594937489832278,"time":3.1000000000000014,"vx":2.1700124035200004,"vy":0.0,"gems":[true,false,false,false,false,false,false,false,false],"action":"no-op","reward":0.01684037168541775,"completed":false,"died":false},{"x":4.9477404791040005,"y":0.7759493748983228,"time":3.2000000000000015,"vx":-0.029987596479999823,"vy":6.2,"gems":[true,false,false,false,false,false,false,false,false],"action":"left + jump","reward":0.006638748599087982,"completed":false,"died":false},{"x":4.724741719456,"y":1.2159493748983228,"time":3.3000000000000016,"vx":-2.22998759648,"vy":4.4,"gems":[true,false,false,false,false,false,false,false,false],"action":"left","reward":-0.003460844348930339,"completed":false,"died":false},{"x":4.721742959808,"y":1.4759493748983228,"time":3.4000000000000017,"vx":-0.029987596479999823,"vy":2.6000000000000005,"gems":[true,false,false,false,false,false,false,false,false],"action":"right","reward":0.006743560227050924,"completed":false,"died":false},{"x":4.93874420016,"y":1.5559493748983229,"time":3.5000000000000018,"vx":2.1700124035200004,"vy":0.8000000000000005,"gems":[true,false,false,false,false,false,false,false,false],"action":"right + jump","reward":0.016845934664720737,"completed":false,"died":false},{"x":5.375745440512,"y":1.5859493748983229,"time":3.600000000000002,"vx":4.3700124035200005,"vy":0.3000000000000005,"gems":[true,false,false,false,false,false,false,false,false],"action":"right + glide","reward":0.02684627896407866,"completed":false,"died":false},{"x":5.716606407986561,"y":1.5659493748983229,"time":3.700000000000002,"vx":3.4086096747456005,"vy":-0.1999999999999995,"gems":[true,false,false,false,false,false,false,false,false],"action":"glide","reward":0.022229467029733392,"completed":false,"died":false},{"x":5.982477962616717,"y":1.365949374898323,"time":3.800000000000002,"vx":2.6587155463015684,"vy":-1.9999999999999996,"gems":[true,true,false,false,false,false,false,false,false],"action":"jump","reward":1.0186283537209435,"completed":false,"died":false},{"x":6.18985777522824,"y":0.9859493748983229,"time":3.900000000000002,"vx":2.073798126115223,"vy":-3.8,"gems":[true,true,false,false,false,false,false,false,false],"action":"jump","reward":0.01581948534008771,"completed":false,"died":false},{"x":6.351614029065227,"y":0.42594937489832296,"time":4.000000000000002,"vx":1.6175625383698742,"vy":-5.6,"gems":[true,true,false,false,false,false,false,false,false],"action":"no-op","reward":0.013628568003019934,"completed":false,"died":false},{"x":6.293370282902215,"y":0.15594937489832278,"time":4.100000000000001,"vx":-0.582437461630126,"vy":0.0,"gems":[true,true,false,false,false,false,false,false,false],"action":"left + jump","reward":0.0034525660694868596,"completed":false,"died":false},{"x":6.015126536739202,"y":0.15594937489832278,"time":4.200000000000001,"vx":-2.782437461630126,"vy":0.0,"gems":[true,true,false,false,false,false,false,false,false],"action":"left","reward":-0.006621405725735876,"completed":false,"died":false},{"x":5.798096414732052,"y":0.7759493748983228,"time":4.300000000000001,"vx":-2.170301220071498,"vy":6.2,"gems":[true,true,false,false,false,false,false,false,false],"action":"jump","reward":-0.0036818281471739846,"completed":false,"died":false},{"x":5.801066292724903,"y":1.2159493748983228,"time":4.4,"vx":0.029698779928502006,"vy":4.4,"gems":[true,true,false,false,false,false,false,false,false],"action":"right","reward":0.006519808333698149,"completed":false,"died":false},{"x":6.0240361707177525,"y":1.605949374898323,"time":4.5,"vx":2.229698779928502,"vy":3.9000000000000004,"gems":[true,true,false,false,false,false,false,false,false],"action":"right + glide","reward":0.016619414676258167,"completed":false,"died":false},{"x":6.467006048710603,"y":1.8159493748983229,"time":4.6,"vx":4.429698779928502,"vy":2.1000000000000005,"gems":[true,true,false,false,false,false,false,false,false],"action":"right + jump","reward":0.026616990880507403,"completed":false,"died":false},{"x":6.812522553545026,"y":1.975949374898323,"time":4.699999999999999,"vx":3.4551650483442318,"vy":1.6000000000000005,"gems":[true,true,false,false,false,false,false,false,false],"action":"glide","reward":0.021937121739573857,"completed":false,"died":false},{"x":7.082025427315877,"y":1.955949374898323,"time":4.799999999999999,"vx":2.6950287377085007,"vy":-0.1999999999999995,"gems":[true,true,false,false,false,false,false,false,false],"action":"no-op","reward":0.018286823809645643,"completed":false,"died":false},{"x":7.1315283010867265,"y":1.755949374898323,"time":4.899999999999999,"vx":0.49502873770850053,"vy":-1.9999999999999996,"gems":[true,true,false,false,false,false,false,false,false],"action":"left + jump","reward":0.008060851864591498,"completed":false,"died":false},{"x":6.961031174857577,"y":1.375949374898323,"time":4.999999999999998,"vx":-1.7049712622914996,"vy":-3.8,"gems":[true,true,false,false,false,false,false,false,false],"action":"left","reward":-0.0020630899421505335,"completed":false,"died":false},{"x":6.82804341639884,"y":0.815949374898323,"time":5.099999999999998,"vx":-1.3298775845873698,"vy":-5.6,"gems":[true,true,false,false,false,false,false,false,false],"action":"jump","reward":-0.0002618292260201296,"completed":false,"died":false},{"x":6.915055657940103,"y":0.15594937489832278,"time":5.1999999999999975,"vx":0.8701224154126304,"vy":0.0,"gems":[true,true,false,false,false,false,false,false,false],"action":"right","reward":0.009900830645865897,"completed":false,"died":false},{"x":7.222067899481366,"y":0.7759493748983228,"time":5.299999999999997,"vx":3.0701224154126305,"vy":6.2,"gems":[true,true,false,false,false,false,false,false,false],"action":"right + jump","reward":0.019961460379440917,"completed":false,"died":false},{"x":7.722067899481366,"y":1.345949374898323,"time":5.399999999999997,"vx":5.0,"vy":5.7,"gems":[true,true,false,false,false,false,false,false,false],"action":"right + glide","reward":0.028679831741451396,"completed":false,"died":false},{"x":8.112067899481366,"y":1.865949374898323,"time":5.4999999999999964,"vx":3.9000000000000004,"vy":5.2,"gems":[true,true,false,false,false,false,false,false,false],"action":"glide","reward":0.0233974532170489,"completed":false,"died":false},{"x":8.416267899481365,"y":2.205949374898323,"time":5.599999999999996,"vx":3.0420000000000003,"vy":3.4000000000000004,"gems":[true,true,false,false,false,false,false,false,false],"action":"no-op","reward":0.01927719796801442,"completed":false,"died":false},{"x":8.500467899481364,"y":2.365949374898323,"time":5.699999999999996,"vx":0.8420000000000001,"vy":1.6000000000000003,"gems":[true,true,false,false,false,false,false,false,false],"action":"left + jump","reward":0.009035134420287258,"completed":false,"died":false},{"x":8.364667899481365,"y":2.345949374898323,"time":5.799999999999995,"vx":-1.358,"vy":-0.19999999999999973,"gems":[true,true,false,false,false,false,false,false,false],"action":"left","reward":-0.001104898989128458,"completed":false,"died":false},{"x":8.258743899481365,"y":2.145949374898323,"time":5.899999999999995,"vx":-1.0592400000000002,"vy":-1.9999999999999998,"gems":[true,true,false,false,false,false,false,false,false],"action":"jump","reward":0.0003297950180987195,"completed":false,"died":false},{"x":8.372819899481366,"y":1.765949374898323,"time":5.999999999999995,"vx":1.14076,"vy":-3.8,"gems":[true,true,false,false,false,false,false,false,false],"action":"right","reward":0.010479903439899916,"completed":false,"died":false},{"x":8.706895899481365,"y":1.555949374898323,"time":6.099999999999994,"vx":3.3407600000000004,"vy":-2.1,"gems":[true,true,false,false,false,false,false,false,false],"action":"right + glide","reward":0.020527981723389217,"completed":false,"died":false},{"x":9.206895899481365,"y":1.165949374898323,"time":6.199999999999994,"vx":5.0,"vy":-3.9000000000000004,"gems":[true,true,false,false,false,false,false,false,false],"action":"right + jump","reward":0.027991208076865844,"completed":false,"died":false},{"x":9.596895899481366,"y":0.7259493748983229,"time":6.299999999999994,"vx":3.9000000000000004,"vy":-4.4,"gems":[true,true,false,false,false,false,false,false,false],"action":"glide","reward":0.022708829552463124,"completed":false,"died":false},{"x":9.901095899481366,"y":0.10594937489832279,"time":6.399999999999993,"vx":3.0420000000000003,"vy":-6.2,"gems":[true,true,false,false,false,false,false,false,false],"action":"no-op","reward":0.018588574303428647,"completed":false,"died":false},{"x":9.985295899481365,"y":-0.03803161072305161,"time":6.499999999999993,"vx":0.8420000000000001,"vy":0.0,"gems":[true,true,false,false,false,false,false,false,false],"action":"left + jump","reward":0.008346510755701484,"completed":false,"died":false},{"x":9.849495899481365,"y":-0.21803161072305163,"time":6.5999999999999925,"vx":-1.358,"vy":-1.8,"gems":[true,true,false,false,false,false,false,false,false],"action":"left","reward":-0.0017935226537144546,"completed":false,"died":false},{"x":9.933695899481364,"y":-0.5780316107230516,"time":6.699999999999992,"vx":0.8420000000000001,"vy":-3.6,"gems":[true,true,false,false,false,false,false,false,false],"action":"right","reward":0.008370441460868747,"completed":false,"died":false},{"x":9.999371899481364,"y":-1.1180316107230517,"time":6.799999999999992,"vx":0.6567600000000001,"vy":-5.4,"gems":[true,true,false,false,false,false,false,false,false],"action":"jump","reward":0.00748088891735966,"completed":false,"died":false},{"x":10.285047899481365,"y":-1.8380316107230517,"time":6.8999999999999915,"vx":2.8567600000000004,"vy":-7.2,"gems":[true,true,false,false,false,false,false,false,false],"action":"right + jump","reward":0.017551413831277347,"completed":false,"died":false},{"x":10.785047899481365,"y":-2.0480316107230516,"time":6.999999999999991,"vx":5.0,"vy":-2.1,"gems":[true,true,false,false,false,false,false,false,false],"action":"right + glide","reward":0.027259303227608063,"completed":false,"died":false},{"x":11.175047899481365,"y":-2.3080316107230514,"time":7.099999999999991,"vx":3.9000000000000004,"vy":-2.6,"gems":[true,true,false,false,false,false,false,false,false],"action":"glide","reward":0.021976924703205565,"completed":false,"died":false},{"x":11.479247899481365,"y":-2.7480316107230514,"time":7.19999999999999,"vx":3.0420000000000003,"vy":-4.4,"gems":[true,true,false,false,false,false,false,false,false],"action":"no-op","reward":0.01785666945417131,"completed":false,"died":false},{"x":11.563447899481364,"y":-3.3680316107230515,"time":7.29999999999999,"vx":0.8420000000000001,"vy":-6.2,"gems":[true,true,false,false,false,false,false,false,false],"action":"left + jump","reward":0.007614605906443925,"completed":false,"died":false},{"x":11.867647899481364,"y":-4.168031610723052,"time":7.39999999999999,"vx":3.0420000000000003,"vy":-8.0,"gems":[true,true,false,false,false,false,false,false,false],"action":"right","reward":0.0176765398827159,"completed":false,"died":false},{"x":12.104923899481363,"y":-5.148031610723052,"time":7.499999999999989,"vx":2.3727600000000004,"vy":-9.8,"gems":[true,true,false,false,false,false,false,false,false],"action":"jump","reward":0.014462740788469217,"completed":false,"died":false},{"x":12.122199899481364,"y":-6.308031610723052,"time":7.599999999999989,"vx":0.17276000000000025,"vy":-11.600000000000001,"gems":[true,true,false,false,false,false,false,false,false],"action":"left","reward":0.004251714808816151,"completed":false,"died":false},{"x":12.359475899481364,"y":-7.518031610723052,"time":7.699999999999989,"vx":2.3727600000000004,"vy":-12.100000000000001,"gems":[true,true,false,false,false,false,false,false,false],"action":"right + glide","reward":0.014344686353162226,"completed":false,"died":false},{"x":12.816751899481364,"y":-8.908031610723052,"time":7.799999999999988,"vx":4.572760000000001,"vy":-13.900000000000002,"gems":[true,true,false,false,false,false,false,false,false],"action":"right + jump","reward":-8.67595423277524,"completed":false,"died":true}];
+const result = {"algorithm":"UCB bandit","seed":33,"difficulty":"medium","steps":78,"return":-5.551346954445167,"completed":false,"died":true,"gems_collected":2,"gems_available":9,"truncated":false,"planning":{"method":"UCB","training":"Online action-reward updates during this episode; no state conditioning.","action_counts":[9,9,11,11,9,10,9,10]}};
+const svg = document.getElementById("scene");
+const scrubber = document.getElementById("scrubber");
+const status = document.getElementById("status");
+const playButton = document.getElementById("play");
+let current = 0;
+let timer = null;
+const NS = "http://www.w3.org/2000/svg";
+function element(name, attrs, parent = svg) {
+  const node = document.createElementNS(NS, name);
+  for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+  parent.appendChild(node);
+  return node;
+}
+function text(value, x, y, attrs = {}) {
+  const node = element("text", {x, y, ...attrs});
+  node.textContent = value;
+  return node;
+}
+function render(index) {
+  current = Math.max(0, Math.min(index, frames.length - 1));
+  scrubber.value = current;
+  const frame = frames[current];
+  const scale = 38;
+  const cameraX = Math.max(-2, Math.min(frame.x - 7, level.goal.x - 18));
+  const cameraY = frame.y + 2.3;
+  const px = x => (x - cameraX) * scale;
+  const py = y => 292 - (y - cameraY) * scale;
+  svg.replaceChildren();
+  const sky = element("defs", {});
+  const gradient = element("linearGradient", {id:"sky", x1:"0", y1:"0", x2:"0", y2:"1"}, sky);
+  element("stop", {offset:"0%", "stop-color":"#233a5b"}, gradient);
+  element("stop", {offset:"100%", "stop-color":"#15243a"}, gradient);
+  element("rect", {x:0,y:0,width:960,height:540,fill:"url(#sky)"});
+  for (const p of level.platforms) {
+    const height = p.y + (p.moving ? p.amplitude * Math.sin(p.phase + frame.time * p.speed) : 0);
+    const x = px(p.left), y = py(height);
+    if (x + (p.right-p.left)*scale < 0 || x > 960) continue;
+    element("rect", {x, y, width:(p.right-p.left)*scale, height:18, rx:4, fill:p.moving?"#53a7a3":"#5fc79c"});
+    element("rect", {x, y:y+13, width:(p.right-p.left)*scale, height:5, fill:"#397b72"});
+  }
+  if (level.planned_route.length > 1) {
+    const routePoints = level.planned_route.map(index => {
+      const p = level.platforms[index];
+      const y = p.y + (p.moving ? p.amplitude * Math.sin(p.phase + frame.time * p.speed) : 0);
+      return [px((p.left + p.right) / 2), py(y) - 13];
+    });
+    element("polyline", {
+      points: routePoints.map(point => point.join(",")).join(" "),
+      fill:"none", stroke:"#ffe66d", "stroke-width":4,
+      "stroke-dasharray":"9 7", opacity:0.9
+    });
+    routePoints.forEach(([x, y], index) => {
+      if (x < -30 || x > 990) return;
+      element("circle", {cx:x, cy:y, r:11, fill:"#ffe66d", stroke:"#423b18", "stroke-width":2});
+      text(String(index + 1), x, y + 5, {fill:"#263044","font-size":13,"font-weight":700,"text-anchor":"middle"});
+    });
+  }
+  for (const gem of level.gems) {
+    if (frame.gems[level.gems.indexOf(gem)]) continue;
+    const x=px(gem.x), y=py(gem.y);
+    if (x < -20 || x > 980) continue;
+    element("polygon", {points:`${x},${y-10} ${x+8},${y} ${x},${y+10} ${x-8},${y}`, fill:"#66d9ff", stroke:"#d7f7ff", "stroke-width":2});
+  }
+  for (const hazard of level.hazards) {
+    const x=px(hazard.x), y=py(hazard.y);
+    if (x < -30 || x > 990) continue;
+    element("polygon", {points:`${x-13},${y+12} ${x},${y-15} ${x+13},${y+12}`, fill:"#f25f5c", stroke:"#ffd1c9", "stroke-width":2});
+  }
+  for (const enemy of level.enemies) {
+    const x=px(enemy.x+enemy.amplitude*Math.sin(enemy.phase+frame.time*enemy.speed)), y=py(enemy.y);
+    if (x < -30 || x > 990) continue;
+    element("circle", {cx:x,cy:y,r:13,fill:"#f69b52",stroke:"#ffe1b9","stroke-width":2});
+    element("circle", {cx:x-4,cy:y-2,r:2,fill:"#28364c"});
+    element("circle", {cx:x+4,cy:y-2,r:2,fill:"#28364c"});
+  }
+  const gx=px(level.goal.x), gy=py(level.goal.y);
+  element("line", {x1:gx,y1:gy-42,x2:gx,y2:gy+4,stroke:"#f5f2d0","stroke-width":4});
+  element("polygon", {points:`${gx+2},${gy-41} ${gx+29},${gy-32} ${gx+2},${gy-22}`,fill:"#f2c14e"});
+  const playerX=px(frame.x), playerY=py(frame.y);
+  element("rect", {x:playerX-11,y:playerY-27,width:22,height:32,rx:6,fill:"#73a7ff",stroke:"#e0eaff","stroke-width":2});
+  element("circle", {cx:playerX+4,cy:playerY-18,r:2.5,fill:"#13233c"});
+  text(`seed ${result.seed} · frame ${current} / ${frames.length-1}`, 18, 30, {fill:"#e8f1ff","font-size":16,"font-weight":600});
+  if (result.planning && result.planning.method) {
+    text(`${result.planning.method} · ${result.planning.expanded_nodes} nodes expanded · cost ${result.planning.estimated_path_cost}`, 18, 53, {fill:"#ffe66d","font-size":14,"font-weight":600});
+  }
+  const terminal = frame.completed ? " · LEVEL COMPLETE!" : frame.died ? " · PLAYER DOWN" : "";
+  status.innerHTML = `<span>Step <strong>${current} / ${frames.length-1}</strong></span><span>Action <strong>${frame.action}</strong></span><span>Position <strong>(${frame.x.toFixed(1)}, ${frame.y.toFixed(1)})</strong></span><span>Velocity <strong>(${frame.vx.toFixed(1)}, ${frame.vy.toFixed(1)})</strong></span><span>Gems <strong>${frame.gems.filter(Boolean).length} / ${level.gems.length}</strong></span><span>Reward <strong>${frame.reward.toFixed(2)}</strong>${terminal}</span>`;
+}
+function stop() { if (timer !== null) clearInterval(timer); timer = null; playButton.textContent = "▶ Play"; }
+function play() {
+  if (timer !== null) { stop(); return; }
+  if (current >= frames.length-1) render(0);
+  playButton.textContent = "⏸ Pause";
+  const interval = Math.max(30, 100 / Number(document.getElementById("speed").value));
+  timer = setInterval(() => {
+    if (current >= frames.length-1) { stop(); return; }
+    render(current+1);
+  }, interval);
+}
+scrubber.addEventListener("input", () => { stop(); render(Number(scrubber.value)); });
+document.getElementById("back").addEventListener("click", () => { stop(); render(current-1); });
+document.getElementById("forward").addEventListener("click", () => { stop(); render(current+1); });
+playButton.addEventListener("click", play);
+document.getElementById("speed").addEventListener("change", () => { if (timer !== null) { stop(); play(); } });
+document.addEventListener("keydown", event => {
+  if (event.code === "Space") { event.preventDefault(); play(); }
+  if (event.code === "ArrowRight") { stop(); render(current+1); }
+  if (event.code === "ArrowLeft") { stop(); render(current-1); }
+});
+render(0);
+</script>
+</body>
+</html>
