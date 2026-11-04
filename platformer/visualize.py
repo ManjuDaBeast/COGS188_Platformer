@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Any
 
 from platformer.env import PlatformerEnv
-from platformer.planning import MCTSPlanner
 
 
 ACTION_NAMES = (
@@ -76,9 +75,7 @@ def create_episode_visualization(
     ]
     total_return = 0.0
     while True:
-        action = policy.act(env) if isinstance(policy, MCTSPlanner) else policy.act(
-            observation, deterministic=True
-        )
+        action = policy.act(observation, deterministic=True)
         observation, reward, terminated, truncated, info = env.step(action)
         total_return += reward
         frames.append(

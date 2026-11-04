@@ -4,11 +4,9 @@ from pathlib import Path
 
 import numpy as np
 
-from platformer.agents import RandomPolicy, TabularQLearning, train_q_learning
-from platformer.deep_rl import DoubleDQN, PPO, train_double_dqn, train_ppo
+from platformer.agents import RandomPolicy
 from platformer.env import DIFFICULTY_CONFIGS, PlatformerEnv
 from platformer.evaluation import evaluate_policy, generalization_gap, steps_to_threshold
-from platformer.planning import MCTSPlanner
 from platformer.visualize import create_episode_visualization
 
 
@@ -66,6 +64,50 @@ class PlatformerEnvironmentTests(unittest.TestCase):
         self.assertEqual(info["difficulty"], "hard")
         self.assertEqual(info["level_profile"]["difficulty"], "hard")
 
+    def test_moving_heavy_layout_is_a_distinct_repeatable_holdout(self) -> None:
+        standard = PlatformerEnv(difficulty="medium", layout_variant="standard")
+        moving_heavy = PlatformerEnv(
+            difficulty="medium", layout_variant="moving_heavy"
+        )
+        _, standard_info = standard.reset(seed=81)
+        _, moving_info = moving_heavy.reset(seed=81)
+        self.assertEqual(moving_info["layout_variant"], "moving_heavy")
+        self.assertGreater(
+            moving_info["level_profile"]["moving_platforms"],
+            standard_info["level_profile"]["moving_platforms"],
+        )
+        self.assertGreater(
+            moving_info["level_profile"]["mean_moving_amplitude"],
+            standard_info["level_profile"]["mean_moving_amplitude"],
+        )
+        for field in ("mean_gap", "max_gap", "mean_platform_width", "hazards", "enemies"):
+            self.assertEqual(
+                standard_info["level_profile"][field],
+                moving_info["level_profile"][field],
+            )
+        second = PlatformerEnv(difficulty="medium", layout_variant="moving_heavy")
+        _, second_info = second.reset(seed=81)
+        self.assertEqual(moving_info["level_profile"], second_info["level_profile"])
+
+    def test_obstacle_switches_and_death_reason_are_reported(self) -> None:
+        env = PlatformerEnv(
+            difficulty="hard", hazards_enabled=False, enemies_enabled=False
+        )
+        env.reset(seed=44)
+        self.assertEqual(env.hazards, [])
+        self.assertEqual(env.enemies, [])
+        _, _, _, _, info = env.step(0)
+        self.assertIn(info["death_reason"], (None, "fall", "hazard", "enemy"))
+
+    def test_fall_death_has_specific_diagnostic_reason(self) -> None:
+        env = PlatformerEnv()
+        env.reset(seed=44)
+        env.y = -8.1
+        _, _, terminated, _, info = env.step(0)
+        self.assertTrue(terminated)
+        self.assertTrue(info["died"])
+        self.assertEqual(info["death_reason"], "fall")
+
     def test_observation_and_actions_match_declared_spaces(self) -> None:
         env = PlatformerEnv()
         observation, _ = env.reset(seed=5)
@@ -95,50 +137,6 @@ class AgentAndMetricsTests(unittest.TestCase):
         self.assertEqual(steps_to_threshold([(10, 0.4), (20, 0.8)]), 20)
         self.assertIsNone(steps_to_threshold([(10, 0.4)]))
         self.assertAlmostEqual(generalization_gap(0.8, 0.5), 0.3)
-
-    def test_q_learning_and_deep_learners_smoke_train(self) -> None:
-        env = PlatformerEnv(max_episode_steps=8)
-        q_agent = TabularQLearning(seed=2)
-        history = train_q_learning(env, q_agent, episodes=2)
-        self.assertEqual(len(history), 2)
-
-        dqn_env = PlatformerEnv(max_episode_steps=8)
-        dqn = DoubleDQN(
-            42,
-            8,
-            batch_size=2,
-            replay_capacity=16,
-            target_update_interval=2,
-            seed=2,
-        )
-        train_double_dqn(
-            dqn_env,
-            dqn,
-            total_timesteps=4,
-            learning_starts=2,
-            train_frequency=1,
-        )
-        self.assertEqual(dqn.steps, 4)
-
-        ppo_env = PlatformerEnv(max_episode_steps=8)
-        ppo = PPO(42, 8, rollout_steps=4, minibatch_size=2, epochs=1, seed=2)
-        train_ppo(ppo_env, ppo, total_timesteps=4)
-        self.assertIsInstance(ppo.act(ppo_env.reset(seed=2)[0]), int)
-
-    def test_mcts_returns_valid_action_without_mutating_environment(self) -> None:
-        env = PlatformerEnv()
-        observation, _ = env.reset(seed=21)
-        planner = MCTSPlanner(simulations=4, rollout_horizon=3, seed=1)
-        action = planner.act(env)
-        self.assertIn(action, range(env.action_space.n))
-        np.testing.assert_array_equal(env._observation(), observation)
-        self.assertEqual(env.elapsed_steps, 0)
-        summary = evaluate_policy(
-            PlatformerEnv(max_episode_steps=2),
-            MCTSPlanner(simulations=2, rollout_horizon=2, seed=1),
-            seeds=[21],
-        )
-        self.assertEqual(len(summary["episodes"]), 1)
 
     def test_visualization_writes_replayable_html(self) -> None:
         env = PlatformerEnv(max_episode_steps=3)

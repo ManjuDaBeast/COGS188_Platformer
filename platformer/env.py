@@ -37,6 +37,7 @@ DIFFICULTY_CONFIGS = {
         "enemy_probability": 0.28,
     },
 }
+LAYOUT_VARIANTS = ("standard", "moving_heavy")
 
 
 @dataclass
@@ -115,6 +116,9 @@ class PlatformerEnv(gym.Env[np.ndarray, int]):
         max_episode_steps: int = 500,
         reward_shaping: bool = True,
         difficulty: str = "medium",
+        layout_variant: str = "standard",
+        hazards_enabled: bool = True,
+        enemies_enabled: bool = True,
     ) -> None:
         super().__init__()
         if level_platforms < 3:
@@ -125,10 +129,15 @@ class PlatformerEnv(gym.Env[np.ndarray, int]):
             raise ValueError(
                 f"difficulty must be one of {', '.join(DIFFICULTY_CONFIGS)}"
             )
+        if layout_variant not in LAYOUT_VARIANTS:
+            raise ValueError(f"layout_variant must be one of {', '.join(LAYOUT_VARIANTS)}")
         self.level_platforms = level_platforms
         self.max_episode_steps = max_episode_steps
         self.reward_shaping = reward_shaping
         self.difficulty = difficulty
+        self.layout_variant = layout_variant
+        self.hazards_enabled = hazards_enabled
+        self.enemies_enabled = enemies_enabled
         self.action_space = spaces.Discrete(len(self.ACTIONS))
         self.observation_space = spaces.Box(
             low=-1.0, high=1.0, shape=(self.OBSERVATION_SIZE,), dtype=np.float32
@@ -163,6 +172,13 @@ class PlatformerEnv(gym.Env[np.ndarray, int]):
                     f"difficulty must be one of {', '.join(DIFFICULTY_CONFIGS)}"
                 )
             self.difficulty = requested_difficulty
+        if options and "layout_variant" in options:
+            requested_variant = options["layout_variant"]
+            if requested_variant not in LAYOUT_VARIANTS:
+                raise ValueError(
+                    f"layout_variant must be one of {', '.join(LAYOUT_VARIANTS)}"
+                )
+            self.layout_variant = requested_variant
         if seed is not None:
             self._last_seed = int(seed)
         else:
@@ -181,6 +197,7 @@ class PlatformerEnv(gym.Env[np.ndarray, int]):
         return self._observation(), {
             "seed": self._last_seed,
             "difficulty": self.difficulty,
+            "layout_variant": self.layout_variant,
             "level_profile": self.level_profile(),
         }
 
@@ -192,10 +209,23 @@ class PlatformerEnv(gym.Env[np.ndarray, int]):
         widths = [platform.width for platform in self.platforms]
         return {
             "difficulty": self.difficulty,
+            "layout_variant": self.layout_variant,
             "mean_gap": float(np.mean(gaps)),
             "max_gap": float(max(gaps)),
             "mean_platform_width": float(np.mean(widths)),
             "moving_platforms": sum(platform.moving for platform in self.platforms),
+            "mean_moving_amplitude": float(
+                np.mean(
+                    [platform.amplitude for platform in self.platforms if platform.moving]
+                )
+            )
+            if any(platform.moving for platform in self.platforms)
+            else 0.0,
+            "mean_moving_speed": float(
+                np.mean([platform.speed for platform in self.platforms if platform.moving])
+            )
+            if any(platform.moving for platform in self.platforms)
+            else 0.0,
             "hazards": len(self.hazards),
             "enemies": len(self.enemies),
         }
@@ -240,20 +270,35 @@ class PlatformerEnv(gym.Env[np.ndarray, int]):
             if 0 < index < self.level_platforms - 1:
                 if self._rng.random() < config["hazard_probability"]:
                     hx = left + float(self._rng.uniform(0.8, max(0.81, width - 0.5)))
-                    self.hazards.append(Hazard(hx, height + 0.35))
+                    if self.hazards_enabled:
+                        self.hazards.append(Hazard(hx, height + 0.35))
                 elif self._rng.random() < config["enemy_probability"]:
                     ex = left + width / 2.0
-                    self.enemies.append(
-                        Enemy(
-                            ex,
-                            height + 0.45,
-                            ex,
-                            float(self._rng.uniform(0.3, min(0.8, width / 4))),
-                            float(self._rng.uniform(0.0, 2.0 * math.pi)),
-                            float(self._rng.uniform(1.0, 2.0)),
+                    if self.enemies_enabled:
+                        self.enemies.append(
+                            Enemy(
+                                ex,
+                                height + 0.45,
+                                ex,
+                                float(self._rng.uniform(0.3, min(0.8, width / 4))),
+                                float(self._rng.uniform(0.0, 2.0 * math.pi)),
+                                float(self._rng.uniform(1.0, 2.0)),
+                            )
                         )
-                    )
             self.gems.append(Gem(left + width / 2.0, height + 1.1))
+        if self.layout_variant == "moving_heavy":
+            motion_rng = np.random.default_rng(
+                np.random.SeedSequence([self._last_seed or 0, 0x4D4F5645])
+            )
+            for platform in self.platforms[1:-1]:
+                platform.moving = bool(motion_rng.random() < 0.85)
+                if platform.moving:
+                    platform.amplitude = float(motion_rng.uniform(0.55, 0.85))
+                    platform.phase = float(motion_rng.uniform(0.0, 2.0 * math.pi))
+                    platform.speed = float(motion_rng.uniform(1.4, 2.2))
+                else:
+                    platform.amplitude = 0.0
+                    platform.speed = 0.0
         last = self.platforms[-1]
         self.goal_x = last.right - 0.65
         self.goal_y = last.y
@@ -342,16 +387,19 @@ class PlatformerEnv(gym.Env[np.ndarray, int]):
                     self.on_ground = True
                     self.glide_available = True
                     break
-        died = self.y < -8.0 or any(
+        death_reason = "fall" if self.y < -8.0 else None
+        if death_reason is None and any(
             abs(self.x - hazard.x) < 0.48 and abs(self.y - hazard.y) < 0.65
             for hazard in self.hazards
-        )
-        if not died:
+        ):
+            death_reason = "hazard"
+        if death_reason is None:
             for enemy in self.enemies:
                 ex, ey = enemy.position_at(self._level_time)
                 if abs(self.x - ex) < 0.65 and abs(self.y - ey) < 0.75:
-                    died = True
+                    death_reason = "enemy"
                     break
+        died = death_reason is not None
         gem_reward = 0.0
         for gem in self.gems:
             if not gem.collected and math.hypot(self.x - gem.x, self.y - gem.y) < 0.8:
@@ -377,6 +425,16 @@ class PlatformerEnv(gym.Env[np.ndarray, int]):
             "gems_available": len(self.gems),
             "level_seed": self._last_seed,
             "difficulty": self.difficulty,
+            "layout_variant": self.layout_variant,
+            "death_reason": death_reason,
+            "progress_fraction": float(
+                np.clip(
+                    (self.x - self.platforms[0].left)
+                    / max(self.goal_x - self.platforms[0].left, 1.0),
+                    0.0,
+                    1.0,
+                )
+            ),
         }
         return self._observation(), float(reward), terminated, truncated, info
 

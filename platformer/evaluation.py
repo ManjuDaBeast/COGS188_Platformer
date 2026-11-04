@@ -2,16 +2,19 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Protocol
 import numpy as np
 
 from platformer.env import PlatformerEnv
-from platformer.planning import MCTSPlanner
+
+
+class Policy(Protocol):
+    def act(self, observation: np.ndarray, *, deterministic: bool = True) -> int: ...
 
 
 def evaluate_policy(
     env: PlatformerEnv,
-    policy: Any,
+    policy: Policy,
     *,
     seeds: list[int] | range,
 ) -> dict[str, Any]:
@@ -23,10 +26,7 @@ def evaluate_policy(
         total_return = 0.0
         steps = 0
         while True:
-            if isinstance(policy, MCTSPlanner):
-                action = policy.act(env)
-            else:
-                action = policy.act(observation, deterministic=True)
+            action = policy.act(observation, deterministic=True)
             observation, reward, terminated, truncated, info = env.step(action)
             total_return += reward
             steps += 1
