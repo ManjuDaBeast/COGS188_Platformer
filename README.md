@@ -29,10 +29,9 @@ of each abstraction. Methods that need a finite state representation will use
 a documented abstraction; they will not be described as exact solutions to
 the original continuous-state problem.
 
-The first four search methods have playable demonstrations on a documented
-platform-transition abstraction. The other lecture-method implementations
-and the full benchmark remain proposed work; these replays are demonstrations,
-not comparative evidence.
+Playable demonstrations are available for the course search, local-search,
+dynamic-programming, Monte Carlo, and bandit methods. These are illustrative
+single episodes, not a held-out benchmark or a performance ranking.
 
 ## Current environment and checks
 
@@ -44,28 +43,29 @@ python3 -m pip install -r requirements.txt
 python3 -m unittest discover -s tests -v
 ```
 
-The environment supports replay visualization for the simple reference
-policies and the four search demonstrations.
+The environment supports replay visualization for simple reference policies
+and course-method demonstrations.
 
-## Lecture search replays
+## Lecture-method level gallery
 
-Open the [replay index](./experiments/lecture_replays/index.html) for
-individual BFS, UCS, greedy best-first, and A* replays. All four use easy
-level seed 6 and complete the same episode. The search nodes are platforms;
-edges are estimated feasible jumps. The replay highlights the route and shows
-the search method's node expansions and estimated route cost.
+Open the [level and replay gallery](./experiments/lecture_replays/index.html)
+to see full-level images for easy, medium, and hard, and an individual replay
+for every lecture method on each difficulty. Each difficulty uses one fixed
+seed shared across methods. The gallery reports completion, episode length,
+and collected gems; open a replay to inspect the attempt frame by frame.
 
-These are demonstrations, not a performance comparison: on this level the
-abstract graph has only one route, so the four methods choose the same
-platform sequence. The planner uses the level model, and a simple simulator
-state-based controller executes its route. This is not a learned,
-observation-only policy.
+The methods use different information: search and dynamic programming plan
+over an abstract platform graph, local search optimizes candidate graph
+routes, Monte Carlo control trains on seeded episodes, and UCB chooses actions
+without conditioning on state. The route planners also use a simple
+simulator-state controller to execute the selected route. Their replays
+illustrate assumptions and behavior, not an apples-to-apples performance
+comparison or evidence of generalization.
 
-To generate another replay locally:
+Regenerate the complete gallery locally:
 
 ```bash
-python3 -m platformer visualize --algorithm astar --difficulty easy --seed 6 \
-  --output experiments/lecture_replays/astar.html
+python3 -m scripts.generate_lecture_replays
 ```
 
 ## Proposal formats

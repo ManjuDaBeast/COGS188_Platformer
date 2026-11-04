@@ -30,6 +30,8 @@ def evaluate_policy(
         while True:
             action = policy.act(observation, deterministic=True)
             observation, reward, terminated, truncated, info = env.step(action)
+            if hasattr(policy, "observe"):
+                policy.observe(reward)
             total_return += reward
             steps += 1
             if terminated or truncated:

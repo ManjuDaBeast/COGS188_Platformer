@@ -44,10 +44,17 @@ behavior alone: on the earlier shared-level benchmark, random actions
 completed 0% of episodes and a hand-written heuristic completed 12.7%
 overall, including 6% on hard levels. Those numbers came from exploratory
 project runs, not from the proposed course-method comparison; they motivate
-the benchmark but will not be used to rank the new methods. The repository
-also contains implementations and results for methods outside the supplied
-lecture set. Those methods are excluded from this proposal's comparison and
-from its conclusions.
+the benchmark but will not be used to rank the new methods. Legacy
+out-of-scope implementations and their results were removed from the active
+project when the course-only scope was adopted.
+
+The repository now includes illustrative replays for the lecture methods on
+fixed easy, medium, and hard levels, plus full-level overview images. These
+are implementation demonstrations, not the proposed paired-seed benchmark.
+They use simplified abstractions and a small number of illustrative levels;
+their outcomes are not evidence for the hypotheses or a general performance
+ranking. The experimental protocol below remains the plan for the
+confirmatory comparison.
 
 ### Why the task is interesting
 

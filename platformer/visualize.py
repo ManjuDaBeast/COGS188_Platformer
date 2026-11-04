@@ -81,6 +81,8 @@ def create_episode_visualization(
     while True:
         action = policy.act(observation, deterministic=True)
         observation, reward, terminated, truncated, info = env.step(action)
+        if hasattr(policy, "observe"):
+            policy.observe(reward)
         total_return += reward
         frames.append(
             {
@@ -98,6 +100,7 @@ def create_episode_visualization(
         )
         if terminated or truncated:
             break
+    planning_metadata = getattr(policy, "visualization_metadata", planning_metadata)
     result = {
         "algorithm": algorithm,
         "seed": seed,

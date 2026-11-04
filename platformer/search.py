@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import heapq
 import itertools
+import math
 from typing import Literal
 
 import numpy as np
@@ -12,7 +13,17 @@ import numpy as np
 from platformer.env import Platform, PlatformerEnv
 
 
-SearchMethod = Literal["bfs", "ucs", "greedy", "astar"]
+SearchMethod = Literal[
+    "bfs",
+    "dfs",
+    "ucs",
+    "greedy",
+    "astar",
+    "hill_climbing",
+    "simulated_annealing",
+    "value_iteration",
+    "policy_iteration",
+]
 
 
 @dataclass(frozen=True)
@@ -38,7 +49,17 @@ class PlatformSearchPolicy:
     GLIDE_GAP = 2.4
 
     def __init__(self, method: SearchMethod, *, expansion_limit: int = 10_000) -> None:
-        if method not in ("bfs", "ucs", "greedy", "astar"):
+        if method not in (
+            "bfs",
+            "dfs",
+            "ucs",
+            "greedy",
+            "astar",
+            "hill_climbing",
+            "simulated_annealing",
+            "value_iteration",
+            "policy_iteration",
+        ):
             raise ValueError(f"unknown search method: {method}")
         if expansion_limit <= 0:
             raise ValueError("expansion_limit must be positive")
@@ -68,16 +89,140 @@ class PlatformSearchPolicy:
                     (target_index, horizontal_cost + vertical_cost + obstacle_cost)
                 )
 
-        self.result = search_platform_graph(
-            adjacency,
-            centers,
-            start=0,
-            goal=count - 1,
-            method=self.method,
-            expansion_limit=self.expansion_limit,
-        )
+        if self.method in ("hill_climbing", "simulated_annealing"):
+            self.result = self._local_search(adjacency, centers)
+        elif self.method in ("value_iteration", "policy_iteration"):
+            self.result = self._dynamic_programming(adjacency, centers)
+        else:
+            self.result = search_platform_graph(
+                adjacency,
+                centers,
+                start=0,
+                goal=count - 1,
+                method=self.method,
+                expansion_limit=self.expansion_limit,
+            )
         self._route_position = 0
         return self.result
+
+    def _local_search(
+        self, adjacency: list[list[tuple[int, float]]], centers: list[float]
+    ) -> SearchResult:
+        assert self.env is not None
+        method = self.method
+        seed = int(self.env._last_seed or 0)
+        rng = np.random.default_rng(seed)
+
+        def random_route() -> tuple[int, ...] | None:
+            route = [0]
+            while route[-1] < len(adjacency) - 1:
+                options = adjacency[route[-1]]
+                if not options:
+                    return None
+                route.append(options[int(rng.integers(len(options)))][0])
+            return tuple(route)
+
+        costs = {
+            (left, right): cost
+            for left, edges in enumerate(adjacency)
+            for right, cost in edges
+        }
+
+        def score(route: tuple[int, ...]) -> float:
+            return sum(costs[(a, b)] for a, b in zip(route, route[1:]))
+
+        current = random_route()
+        if current is None:
+            raise ValueError(f"{method} found no route through the platform graph")
+        best = current
+        best_score = score(best)
+        expansions = 0
+        for iteration in range(self.expansion_limit):
+            candidate = random_route()
+            expansions += 1
+            if candidate is None:
+                continue
+            candidate_score = score(candidate)
+            if candidate_score < best_score:
+                best, best_score = candidate, candidate_score
+            if method == "hill_climbing":
+                if candidate_score < score(current):
+                    current = candidate
+            else:
+                temperature = max(0.01, 1.0 - iteration / self.expansion_limit)
+                delta = candidate_score - score(current)
+                if delta < 0 or rng.random() < math.exp(-delta / temperature):
+                    current = candidate
+        return SearchResult(method, best, expansions, best_score)
+
+    def _dynamic_programming(
+        self, adjacency: list[list[tuple[int, float]]], centers: list[float]
+    ) -> SearchResult:
+        count = len(adjacency)
+        goal = count - 1
+        values = [0.0] * count
+        policy = [None] * count
+        gamma = 0.95
+        sweeps = 0
+
+        if self.method == "value_iteration":
+            for sweeps in range(1, self.expansion_limit + 1):
+                largest_change = 0.0
+                updated = values.copy()
+                for node in range(goal - 1, -1, -1):
+                    if adjacency[node]:
+                        updated[node] = max(
+                            -cost + gamma * values[target]
+                            for target, cost in adjacency[node]
+                        )
+                    largest_change = max(largest_change, abs(updated[node] - values[node]))
+                values = updated
+                if largest_change < 1e-10:
+                    break
+            for node in range(goal):
+                if adjacency[node]:
+                    policy[node] = max(
+                        adjacency[node],
+                        key=lambda edge: -edge[1] + gamma * values[edge[0]],
+                    )[0]
+        else:
+            for node in range(goal):
+                if adjacency[node]:
+                    policy[node] = adjacency[node][0][0]
+            for sweeps in range(1, self.expansion_limit + 1):
+                for node in range(goal - 1, -1, -1):
+                    target = policy[node]
+                    if target is not None:
+                        edge_cost = next(
+                            cost for candidate, cost in adjacency[node] if candidate == target
+                        )
+                        values[node] = -edge_cost + gamma * values[target]
+                stable = True
+                for node in range(goal):
+                    if not adjacency[node]:
+                        continue
+                    best_target = max(
+                        adjacency[node],
+                        key=lambda edge: -edge[1] + gamma * values[edge[0]],
+                    )[0]
+                    if best_target != policy[node]:
+                        policy[node] = best_target
+                        stable = False
+                if stable:
+                    break
+
+        route = [0]
+        route_cost = 0.0
+        while route[-1] != goal:
+            node = route[-1]
+            target = policy[node]
+            if target is None or target in route:
+                raise ValueError(f"{self.method} produced no route to the goal")
+            route_cost += next(
+                cost for candidate, cost in adjacency[node] if candidate == target
+            )
+            route.append(target)
+        return SearchResult(self.method, tuple(route), sweeps * count, route_cost)
 
     def _landing_risk(self, platform: Platform) -> float:
         assert self.env is not None
@@ -149,7 +294,7 @@ def search_platform_graph(
     method: SearchMethod,
     expansion_limit: int = 10_000,
 ) -> SearchResult:
-    """Run one of the four lecture search methods on a weighted graph."""
+    """Run an uninformed or heuristic lecture search method on a weighted graph."""
     if len(adjacency) != len(positions):
         raise ValueError("adjacency and positions must have the same number of nodes")
     if not (0 <= start < len(adjacency) and 0 <= goal < len(adjacency)):
@@ -173,6 +318,37 @@ def search_platform_graph(
     path_cost = {start: 0.0}
     expanded = 0
     settled: set[int] = set()
+    if method == "dfs":
+        stack = [start]
+        parents: dict[int, int | None] = {start: None}
+        seen = {start}
+        expanded = 0
+        while stack:
+            node = stack.pop()
+            if node == goal:
+                path = []
+                cursor: int | None = goal
+                while cursor is not None:
+                    path.append(cursor)
+                    cursor = parents[cursor]
+                path.reverse()
+                return SearchResult(
+                    method,
+                    tuple(path),
+                    expanded,
+                    float(len(path) - 1),
+                )
+            if expanded >= expansion_limit:
+                raise RuntimeError(
+                    f"DFS exceeded its {expansion_limit}-node expansion limit"
+                )
+            expanded += 1
+            for neighbor, _ in reversed(adjacency[node]):
+                if neighbor not in seen:
+                    seen.add(neighbor)
+                    parents[neighbor] = node
+                    stack.append(neighbor)
+        raise ValueError(f"DFS found no path from node {start} to node {goal}")
 
     while frontier:
         priority, _, node = heapq.heappop(frontier)

@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 
 from platformer.agents import RandomPolicy
+from platformer.course_agents import MonteCarloControlPolicy, UCBPolicy
 from platformer.env import DIFFICULTY_CONFIGS, PlatformerEnv
 from platformer.evaluation import evaluate_policy, generalization_gap, steps_to_threshold
 from platformer.search import PlatformSearchPolicy, search_platform_graph
@@ -171,6 +172,49 @@ class AgentAndMetricsTests(unittest.TestCase):
         self.assertIn("const level =", page)
         self.assertIn("planned_route", page)
         self.assertIn("nodes expanded", page)
+
+    def test_all_graph_lecture_methods_produce_a_start_to_goal_route(self) -> None:
+        methods = (
+            "bfs",
+            "dfs",
+            "ucs",
+            "greedy",
+            "astar",
+            "hill_climbing",
+            "simulated_annealing",
+            "value_iteration",
+            "policy_iteration",
+        )
+        env = PlatformerEnv(difficulty="easy")
+        try:
+            env.reset(seed=6)
+            for method in methods:
+                policy = PlatformSearchPolicy(method)
+                result = policy.prepare(env)
+                self.assertEqual(result.path[0], 0, method)
+                self.assertEqual(result.path[-1], len(env.platforms) - 1, method)
+                self.assertGreater(result.expanded, 0, method)
+        finally:
+            env.close()
+
+    def test_monte_carlo_and_ucb_course_agents_update(self) -> None:
+        env = PlatformerEnv(difficulty="easy", max_episode_steps=2)
+        try:
+            observation, _ = env.reset(seed=5)
+            monte_carlo = MonteCarloControlPolicy(episodes=1, seed=3)
+            monte_carlo.prepare(env)
+            self.assertEqual(monte_carlo.training_steps, 2)
+            self.assertGreater(len(monte_carlo.values), 0)
+            self.assertIn(monte_carlo.act(observation), range(env.action_space.n))
+
+            ucb = UCBPolicy(actions=env.action_space.n)
+            for reward in range(env.action_space.n):
+                ucb.act(observation)
+                ucb.observe(float(reward))
+            self.assertEqual(int(ucb.counts.sum()), env.action_space.n)
+            self.assertEqual(ucb.total, env.action_space.n)
+        finally:
+            env.close()
 
     def test_random_evaluation_and_summary_metrics(self) -> None:
         env = PlatformerEnv(max_episode_steps=8)

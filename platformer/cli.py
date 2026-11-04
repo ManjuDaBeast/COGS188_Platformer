@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from platformer.agents import HeuristicPolicy, Policy, RandomPolicy
+from platformer.course_agents import MonteCarloControlPolicy, UCBPolicy
 from platformer.env import PlatformerEnv
 from platformer.evaluation import evaluate_policy
 from platformer.search import PlatformSearchPolicy, SearchMethod
@@ -23,14 +24,23 @@ def _make_policy(name: str, seed: int) -> Policy:
         return RandomPolicy(seed)
     if name == "heuristic":
         return HeuristicPolicy()
-    if name in ("bfs", "ucs", "greedy", "astar"):
-        methods: dict[str, SearchMethod] = {
-            "bfs": "bfs",
-            "ucs": "ucs",
-            "greedy": "greedy",
-            "astar": "astar",
-        }
+    methods: dict[str, SearchMethod] = {
+        "bfs": "bfs",
+        "dfs": "dfs",
+        "ucs": "ucs",
+        "greedy": "greedy",
+        "astar": "astar",
+        "hill-climbing": "hill_climbing",
+        "simulated-annealing": "simulated_annealing",
+        "value-iteration": "value_iteration",
+        "policy-iteration": "policy_iteration",
+    }
+    if name in methods:
         return PlatformSearchPolicy(methods[name])
+    if name == "ucb":
+        return UCBPolicy()
+    if name == "monte-carlo":
+        return MonteCarloControlPolicy(seed=seed)
     raise ValueError(f"unsupported reference policy: {name}")
 
 
@@ -87,7 +97,25 @@ def build_parser() -> argparse.ArgumentParser:
     eval_parser = subparsers.add_parser(
         "evaluate", help="evaluate a simple reference policy on fixed level seeds"
     )
-    eval_parser.add_argument("--algorithm", choices=("random", "heuristic"), required=True)
+    eval_parser.add_argument(
+        "--algorithm",
+        choices=(
+            "random",
+            "heuristic",
+            "bfs",
+            "dfs",
+            "ucs",
+            "greedy",
+            "astar",
+            "hill-climbing",
+            "simulated-annealing",
+            "value-iteration",
+            "policy-iteration",
+            "monte-carlo",
+            "ucb",
+        ),
+        required=True,
+    )
     eval_parser.add_argument("--episodes", type=int, default=20)
     eval_parser.add_argument("--seed-start", type=int, default=1_000)
     eval_parser.add_argument("--output", type=Path)
@@ -102,7 +130,21 @@ def build_parser() -> argparse.ArgumentParser:
     )
     visualize_parser.add_argument(
         "--algorithm",
-        choices=("random", "heuristic", "bfs", "ucs", "greedy", "astar"),
+        choices=(
+            "random",
+            "heuristic",
+            "bfs",
+            "dfs",
+            "ucs",
+            "greedy",
+            "astar",
+            "hill-climbing",
+            "simulated-annealing",
+            "value-iteration",
+            "policy-iteration",
+            "monte-carlo",
+            "ucb",
+        ),
         default="heuristic",
     )
     visualize_parser.add_argument(

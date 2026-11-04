@@ -1,29 +1,17 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>COGS 188 Platformer Search Replays</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>COGS 188 Platformer: Lecture Methods by Difficulty</title>
 <style>
-  :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #101725; color: #edf3fa; }
-  body { max-width: 900px; margin: 36px auto; padding: 0 20px; line-height: 1.55; }
-  h1 { line-height: 1.2; }
-  .card { display: block; margin: 12px 0; padding: 16px 18px; border: 1px solid #40516a; border-radius: 10px; background: #18243a; color: inherit; text-decoration: none; }
-  .card:hover { border-color: #ffe66d; background: #202f49; }
-  .card strong { color: #ffe66d; font-size: 1.08rem; }
-  .note { margin-top: 24px; padding: 14px 18px; border-left: 4px solid #65d6b1; background: #18243a; }
-</style>
-</head>
-<body>
-<h1>Lecture Search Method Replays</h1>
-<p>Each replay shows one search method planning on the same easy platformer level (seed 6), followed by a simple controller executing the planned route.</p>
-<a class="card" href="bfs.html"><strong>Breadth-first search (BFS)</strong><br>Finds a route with the fewest abstract platform transitions.</a>
-<a class="card" href="ucs.html"><strong>Uniform-cost search (UCS)</strong><br>Prioritizes accumulated estimated jump distance, height change, and landing risk.</a>
-<a class="card" href="greedy.html"><strong>Greedy best-first search</strong><br>Prioritizes estimated remaining horizontal distance to the goal.</a>
-<a class="card" href="astar.html"><strong>A*</strong><br>Combines accumulated route cost with the remaining-distance heuristic.</a>
-<div class="note">
-  <strong>How to interpret these:</strong> The graph uses platforms as nodes and estimated feasible jumps as edges. All four methods complete this episode in 96 steps and collect all 9 gems. They choose the same route because this particular graph has only one route. The replays illustrate the methods and abstraction; they are not a benchmark, and they do not establish which method performs best.
-</div>
-<p><a href="../../README.md">Project README</a></p>
-</body>
-</html>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#101725;color:#edf3fa}
+body{max-width:1180px;margin:32px auto;padding:0 20px;line-height:1.5}
+h1{line-height:1.15}section{margin:34px 0;padding:20px;border:1px solid #40516a;border-radius:12px;background:#18243a}
+.level{width:100%;height:auto;border-radius:8px;border:1px solid #40516a}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-top:16px}
+.replay{display:flex;flex-direction:column;gap:4px;padding:12px;border:1px solid #465a75;border-radius:8px;color:inherit;text-decoration:none;background:#202f49}
+.replay:hover{border-color:#ffe66d}.replay strong{color:#ffe66d}.replay span{font-size:.88rem;color:#c6d3e2}
+.note{padding:14px 18px;border-left:4px solid #65d6b1;background:#18243a}
+</style></head><body>
+<h1>Lecture Models on Easy, Medium, and Hard Levels</h1>
+<p>Each difficulty uses one fixed, seeded level shared by all methods. Click a level image for a larger view, or open any replay to inspect the agent's attempt frame by frame.</p>
+<div class="note"><strong>Interpretation:</strong> BFS/DFS/UCS/greedy/A* search platform routes; value/policy iteration solve a small approximate graph MDP; hill climbing and simulated annealing optimize candidate routes; Monte Carlo control trains on seeded episodes; UCB selects actions without using state. Their information and compute differ, so these one-level replays illustrate behavior, not a fair ranking or estimate of generalization.</div>
+<section><h2>Easy level · seed 6</h2><a href="levels/easy.png"><img class="level" src="levels/easy.png" alt="easy level overview"></a><div class="grid"><a class="replay" href="easy/bfs.html"><strong>Breadth-first search</strong><span>Completed · 96 steps · 9/9 gems</span></a><a class="replay" href="easy/dfs.html"><strong>Depth-first search</strong><span>Completed · 96 steps · 9/9 gems</span></a><a class="replay" href="easy/ucs.html"><strong>Uniform-cost search</strong><span>Completed · 96 steps · 9/9 gems</span></a><a class="replay" href="easy/greedy.html"><strong>Greedy best-first search</strong><span>Completed · 96 steps · 9/9 gems</span></a><a class="replay" href="easy/astar.html"><strong>A*</strong><span>Completed · 96 steps · 9/9 gems</span></a><a class="replay" href="easy/value-iteration.html"><strong>Value iteration</strong><span>Completed · 96 steps · 9/9 gems</span></a><a class="replay" href="easy/policy-iteration.html"><strong>Policy iteration</strong><span>Completed · 96 steps · 9/9 gems</span></a><a class="replay" href="easy/monte-carlo.html"><strong>Monte Carlo control</strong><span>Did not complete · 350 steps · 1/9 gems</span></a><a class="replay" href="easy/hill-climbing.html"><strong>Hill climbing</strong><span>Completed · 96 steps · 9/9 gems</span></a><a class="replay" href="easy/simulated-annealing.html"><strong>Simulated annealing</strong><span>Completed · 96 steps · 9/9 gems</span></a><a class="replay" href="easy/ucb.html"><strong>UCB bandit</strong><span>Did not complete · 162 steps · 6/9 gems</span></a></div></section><section><h2>Medium level · seed 33</h2><a href="levels/medium.png"><img class="level" src="levels/medium.png" alt="medium level overview"></a><div class="grid"><a class="replay" href="medium/bfs.html"><strong>Breadth-first search</strong><span>Completed · 93 steps · 9/9 gems</span></a><a class="replay" href="medium/dfs.html"><strong>Depth-first search</strong><span>Completed · 93 steps · 9/9 gems</span></a><a class="replay" href="medium/ucs.html"><strong>Uniform-cost search</strong><span>Completed · 93 steps · 9/9 gems</span></a><a class="replay" href="medium/greedy.html"><strong>Greedy best-first search</strong><span>Completed · 93 steps · 9/9 gems</span></a><a class="replay" href="medium/astar.html"><strong>A*</strong><span>Completed · 93 steps · 9/9 gems</span></a><a class="replay" href="medium/value-iteration.html"><strong>Value iteration</strong><span>Completed · 93 steps · 9/9 gems</span></a><a class="replay" href="medium/policy-iteration.html"><strong>Policy iteration</strong><span>Completed · 93 steps · 9/9 gems</span></a><a class="replay" href="medium/monte-carlo.html"><strong>Monte Carlo control</strong><span>Did not complete · 350 steps · 1/9 gems</span></a><a class="replay" href="medium/hill-climbing.html"><strong>Hill climbing</strong><span>Completed · 93 steps · 9/9 gems</span></a><a class="replay" href="medium/simulated-annealing.html"><strong>Simulated annealing</strong><span>Completed · 93 steps · 9/9 gems</span></a><a class="replay" href="medium/ucb.html"><strong>UCB bandit</strong><span>Did not complete · 78 steps · 2/9 gems</span></a></div></section><section><h2>Hard level · seed 6</h2><a href="levels/hard.png"><img class="level" src="levels/hard.png" alt="hard level overview"></a><div class="grid"><a class="replay" href="hard/bfs.html"><strong>Breadth-first search</strong><span>Did not complete · 36 steps · 4/9 gems</span></a><a class="replay" href="hard/dfs.html"><strong>Depth-first search</strong><span>Did not complete · 36 steps · 4/9 gems</span></a><a class="replay" href="hard/ucs.html"><strong>Uniform-cost search</strong><span>Did not complete · 36 steps · 4/9 gems</span></a><a class="replay" href="hard/greedy.html"><strong>Greedy best-first search</strong><span>Did not complete · 36 steps · 4/9 gems</span></a><a class="replay" href="hard/astar.html"><strong>A*</strong><span>Did not complete · 36 steps · 4/9 gems</span></a><a class="replay" href="hard/value-iteration.html"><strong>Value iteration</strong><span>Did not complete · 36 steps · 4/9 gems</span></a><a class="replay" href="hard/policy-iteration.html"><strong>Policy iteration</strong><span>Did not complete · 36 steps · 4/9 gems</span></a><a class="replay" href="hard/monte-carlo.html"><strong>Monte Carlo control</strong><span>Did not complete · 350 steps · 0/9 gems</span></a><a class="replay" href="hard/hill-climbing.html"><strong>Hill climbing</strong><span>Did not complete · 36 steps · 4/9 gems</span></a><a class="replay" href="hard/simulated-annealing.html"><strong>Simulated annealing</strong><span>Did not complete · 36 steps · 4/9 gems</span></a><a class="replay" href="hard/ucb.html"><strong>UCB bandit</strong><span>Did not complete · 87 steps · 4/9 gems</span></a></div></section><p><a href="../../README.md">Project README</a></p></body></html>
