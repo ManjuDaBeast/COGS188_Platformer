@@ -48,11 +48,14 @@ and course-method demonstrations.
 
 ## Lecture-method level gallery
 
-Open the [level and replay gallery](./experiments/lecture_replays/index.html)
+View the rendered [hosted level and replay gallery](https://manjudabest.github.io/COGS188_Platformer/)
 to see full-level images for easy, medium, and hard, and an individual replay
 for every lecture method on each difficulty. Each difficulty uses one fixed
 seed shared across methods. The gallery reports completion, episode length,
 and collected gems; open a replay to inspect the attempt frame by frame.
+
+The GitHub repository's file view shows HTML source code. Use the hosted
+gallery link above for the rendered visuals.
 
 The methods use different information: search and dynamic programming plan
 over an abstract platform graph, local search optimizes candidate graph
