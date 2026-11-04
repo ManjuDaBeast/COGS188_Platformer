@@ -23,6 +23,8 @@ def evaluate_policy(
     episodes = []
     for seed in seeds:
         observation, _ = env.reset(seed=int(seed))
+        if hasattr(policy, "prepare"):
+            policy.prepare(env)
         total_return = 0.0
         steps = 0
         while True:

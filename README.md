@@ -29,9 +29,10 @@ of each abstraction. Methods that need a finite state representation will use
 a documented abstraction; they will not be described as exact solutions to
 the original continuous-state problem.
 
-The repository is being narrowed to the supplied lecture-method scope. The
-course-method implementations and their new benchmark are proposed work in
-[`PROJECT_PROPOSAL.md`](./PROJECT_PROPOSAL.md), not yet completed results.
+The first four search methods have playable demonstrations on a documented
+platform-transition abstraction. The other lecture-method implementations
+and the full benchmark remain proposed work; these replays are demonstrations,
+not comparative evidence.
 
 ## Current environment and checks
 
@@ -43,8 +44,29 @@ python3 -m pip install -r requirements.txt
 python3 -m unittest discover -s tests -v
 ```
 
-The environment supports replay visualization for inspecting a single
-episode with either of the simple reference policies.
+The environment supports replay visualization for the simple reference
+policies and the four search demonstrations.
+
+## Lecture search replays
+
+Open the [replay index](./experiments/lecture_replays/index.html) for
+individual BFS, UCS, greedy best-first, and A* replays. All four use easy
+level seed 6 and complete the same episode. The search nodes are platforms;
+edges are estimated feasible jumps. The replay highlights the route and shows
+the search method's node expansions and estimated route cost.
+
+These are demonstrations, not a performance comparison: on this level the
+abstract graph has only one route, so the four methods choose the same
+platform sequence. The planner uses the level model, and a simple simulator
+state-based controller executes its route. This is not a learned,
+observation-only policy.
+
+To generate another replay locally:
+
+```bash
+python3 -m platformer visualize --algorithm astar --difficulty easy --seed 6 \
+  --output experiments/lecture_replays/astar.html
+```
 
 ## Proposal formats
 

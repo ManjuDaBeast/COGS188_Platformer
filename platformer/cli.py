@@ -6,9 +6,10 @@ import argparse
 import json
 from pathlib import Path
 
-from platformer.agents import HeuristicPolicy, RandomPolicy
+from platformer.agents import HeuristicPolicy, Policy, RandomPolicy
 from platformer.env import PlatformerEnv
 from platformer.evaluation import evaluate_policy
+from platformer.search import PlatformSearchPolicy, SearchMethod
 from platformer.visualize import create_episode_visualization
 
 
@@ -17,11 +18,19 @@ def _write_json(path: Path, payload: object) -> None:
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
-def _make_policy(name: str, seed: int):
+def _make_policy(name: str, seed: int) -> Policy:
     if name == "random":
         return RandomPolicy(seed)
     if name == "heuristic":
         return HeuristicPolicy()
+    if name in ("bfs", "ucs", "greedy", "astar"):
+        methods: dict[str, SearchMethod] = {
+            "bfs": "bfs",
+            "ucs": "ucs",
+            "greedy": "greedy",
+            "astar": "astar",
+        }
+        return PlatformSearchPolicy(methods[name])
     raise ValueError(f"unsupported reference policy: {name}")
 
 
@@ -92,7 +101,9 @@ def build_parser() -> argparse.ArgumentParser:
         "visualize", help="save a playable HTML replay of a reference policy"
     )
     visualize_parser.add_argument(
-        "--algorithm", choices=("random", "heuristic"), default="heuristic"
+        "--algorithm",
+        choices=("random", "heuristic", "bfs", "ucs", "greedy", "astar"),
+        default="heuristic",
     )
     visualize_parser.add_argument(
         "--output", type=Path, default=Path("platformer_episode.html")

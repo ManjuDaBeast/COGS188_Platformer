@@ -32,6 +32,9 @@ def create_episode_visualization(
 ) -> dict[str, Any]:
     """Run one seeded episode and save it as a playable HTML file."""
     observation, _ = env.reset(seed=seed)
+    if hasattr(policy, "prepare"):
+        policy.prepare(env)
+    planning_metadata = getattr(policy, "visualization_metadata", {})
     level = {
         "platforms": [
             {
@@ -58,6 +61,7 @@ def create_episode_visualization(
         ],
         "gems": [{"x": item.x, "y": item.y} for item in env.gems],
         "goal": {"x": env.goal_x, "y": env.goal_y},
+        "planned_route": planning_metadata.get("planned_route", []),
     }
     frames: list[dict[str, Any]] = [
         {
@@ -105,6 +109,7 @@ def create_episode_visualization(
         "gems_collected": int(info["gems_collected"]),
         "gems_available": int(info["gems_available"]),
         "truncated": bool(truncated),
+        "planning": planning_metadata,
     }
     target = Path(output_path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -198,6 +203,23 @@ function render(index) {{
     element("rect", {{x, y, width:(p.right-p.left)*scale, height:18, rx:4, fill:p.moving?"#53a7a3":"#5fc79c"}});
     element("rect", {{x, y:y+13, width:(p.right-p.left)*scale, height:5, fill:"#397b72"}});
   }}
+  if (level.planned_route.length > 1) {{
+    const routePoints = level.planned_route.map(index => {{
+      const p = level.platforms[index];
+      const y = p.y + (p.moving ? p.amplitude * Math.sin(p.phase + frame.time * p.speed) : 0);
+      return [px((p.left + p.right) / 2), py(y) - 13];
+    }});
+    element("polyline", {{
+      points: routePoints.map(point => point.join(",")).join(" "),
+      fill:"none", stroke:"#ffe66d", "stroke-width":4,
+      "stroke-dasharray":"9 7", opacity:0.9
+    }});
+    routePoints.forEach(([x, y], index) => {{
+      if (x < -30 || x > 990) return;
+      element("circle", {{cx:x, cy:y, r:11, fill:"#ffe66d", stroke:"#423b18", "stroke-width":2}});
+      text(String(index + 1), x, y + 5, {{fill:"#263044","font-size":13,"font-weight":700,"text-anchor":"middle"}});
+    }});
+  }}
   for (const gem of level.gems) {{
     if (frame.gems[level.gems.indexOf(gem)]) continue;
     const x=px(gem.x), y=py(gem.y);
@@ -223,6 +245,9 @@ function render(index) {{
   element("rect", {{x:playerX-11,y:playerY-27,width:22,height:32,rx:6,fill:"#73a7ff",stroke:"#e0eaff","stroke-width":2}});
   element("circle", {{cx:playerX+4,cy:playerY-18,r:2.5,fill:"#13233c"}});
   text(`seed ${{result.seed}} · frame ${{current}} / ${{frames.length-1}}`, 18, 30, {{fill:"#e8f1ff","font-size":16,"font-weight":600}});
+  if (result.planning && result.planning.method) {{
+    text(`${{result.planning.method}} · ${{result.planning.expanded_nodes}} nodes expanded · cost ${{result.planning.estimated_path_cost}}`, 18, 53, {{fill:"#ffe66d","font-size":14,"font-weight":600}});
+  }}
   const terminal = frame.completed ? " · LEVEL COMPLETE!" : frame.died ? " · PLAYER DOWN" : "";
   status.innerHTML = `<span>Step <strong>${{current}} / ${{frames.length-1}}</strong></span><span>Action <strong>${{frame.action}}</strong></span><span>Position <strong>(${{frame.x.toFixed(1)}}, ${{frame.y.toFixed(1)}})</strong></span><span>Velocity <strong>(${{frame.vx.toFixed(1)}}, ${{frame.vy.toFixed(1)}})</strong></span><span>Gems <strong>${{frame.gems.filter(Boolean).length}} / ${{level.gems.length}}</strong></span><span>Reward <strong>${{frame.reward.toFixed(2)}}</strong>${{terminal}}</span>`;
 }}

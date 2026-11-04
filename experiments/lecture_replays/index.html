@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>COGS 188 Platformer Search Replays</title>
+<style>
+  :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #101725; color: #edf3fa; }
+  body { max-width: 900px; margin: 36px auto; padding: 0 20px; line-height: 1.55; }
+  h1 { line-height: 1.2; }
+  .card { display: block; margin: 12px 0; padding: 16px 18px; border: 1px solid #40516a; border-radius: 10px; background: #18243a; color: inherit; text-decoration: none; }
+  .card:hover { border-color: #ffe66d; background: #202f49; }
+  .card strong { color: #ffe66d; font-size: 1.08rem; }
+  .note { margin-top: 24px; padding: 14px 18px; border-left: 4px solid #65d6b1; background: #18243a; }
+</style>
+</head>
+<body>
+<h1>Lecture Search Method Replays</h1>
+<p>Each replay shows one search method planning on the same easy platformer level (seed 6), followed by a simple controller executing the planned route.</p>
+<a class="card" href="bfs.html"><strong>Breadth-first search (BFS)</strong><br>Finds a route with the fewest abstract platform transitions.</a>
+<a class="card" href="ucs.html"><strong>Uniform-cost search (UCS)</strong><br>Prioritizes accumulated estimated jump distance, height change, and landing risk.</a>
+<a class="card" href="greedy.html"><strong>Greedy best-first search</strong><br>Prioritizes estimated remaining horizontal distance to the goal.</a>
+<a class="card" href="astar.html"><strong>A*</strong><br>Combines accumulated route cost with the remaining-distance heuristic.</a>
+<div class="note">
+  <strong>How to interpret these:</strong> The graph uses platforms as nodes and estimated feasible jumps as edges. All four methods complete this episode in 96 steps and collect all 9 gems. They choose the same route because this particular graph has only one route. The replays illustrate the methods and abstraction; they are not a benchmark, and they do not establish which method performs best.
+</div>
+<p><a href="../../README.md">Project README</a></p>
+</body>
+</html>

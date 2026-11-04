@@ -7,6 +7,7 @@ import numpy as np
 from platformer.agents import RandomPolicy
 from platformer.env import DIFFICULTY_CONFIGS, PlatformerEnv
 from platformer.evaluation import evaluate_policy, generalization_gap, steps_to_threshold
+from platformer.search import PlatformSearchPolicy, search_platform_graph
 from platformer.visualize import create_episode_visualization
 
 
@@ -127,6 +128,50 @@ class PlatformerEnvironmentTests(unittest.TestCase):
 
 
 class AgentAndMetricsTests(unittest.TestCase):
+    def test_course_search_methods_follow_their_objectives(self) -> None:
+        adjacency = [
+            [(1, 50.0), (2, 1.0)],
+            [(3, 50.0)],
+            [(3, 2.0)],
+            [],
+        ]
+        positions = [0.0, 2.0, 1.0, 3.0]
+        bfs = search_platform_graph(
+            adjacency, positions, start=0, goal=3, method="bfs"
+        )
+        ucs = search_platform_graph(
+            adjacency, positions, start=0, goal=3, method="ucs"
+        )
+        greedy = search_platform_graph(
+            adjacency, positions, start=0, goal=3, method="greedy"
+        )
+        astar = search_platform_graph(
+            adjacency, positions, start=0, goal=3, method="astar"
+        )
+        self.assertEqual(bfs.path, (0, 1, 3))
+        self.assertEqual(ucs.path, (0, 2, 3))
+        self.assertEqual(greedy.path, (0, 1, 3))
+        self.assertEqual(astar.path, (0, 2, 3))
+
+    def test_search_replay_includes_abstract_route_and_expansion_data(self) -> None:
+        env = PlatformerEnv(difficulty="easy", max_episode_steps=50)
+        policy = PlatformSearchPolicy("astar")
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "astar.html"
+            summary = create_episode_visualization(
+                env,
+                policy,
+                seed=4,
+                output_path=output,
+                algorithm="A*",
+            )
+            page = output.read_text(encoding="utf-8")
+        self.assertTrue(summary["planning"]["planned_route"])
+        self.assertGreater(summary["planning"]["expanded_nodes"], 0)
+        self.assertIn("const level =", page)
+        self.assertIn("planned_route", page)
+        self.assertIn("nodes expanded", page)
+
     def test_random_evaluation_and_summary_metrics(self) -> None:
         env = PlatformerEnv(max_episode_steps=8)
         first = evaluate_policy(env, RandomPolicy(seed=1), seeds=[3, 4])
